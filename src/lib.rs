@@ -1,46 +1,15 @@
 #![deny(clippy::all)]
 #![warn(clippy::pedantic)]
 
+mod error;
+
+use error::Error;
 use serde::{Deserialize, Serialize};
-use std::fmt;
+use std::result;
 
 const POKEAPI_ROOT: &str = "https://pokeapi.co/api/v2";
 
-type Result<T> = std::result::Result<T, Error>;
-
-#[derive(Debug)]
-pub enum ErrorKind<'a> {
-    RequestError(&'a str),
-}
-
-impl fmt::Display for ErrorKind<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            ErrorKind::RequestError(message) => write!(f, "{message}"),
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct Error {
-    kind: ErrorKind<'static>,
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.kind)
-    }
-}
-
-impl std::error::Error for Error {}
-
-impl From<reqwest::Error> for Error {
-    fn from(_error: reqwest::Error) -> Self {
-        Self {
-            kind: ErrorKind::RequestError("Reqwest Error"),
-        }
-    }
-}
+type Result<T> = result::Result<T, Error>;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PokemonDetail {
