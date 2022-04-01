@@ -6,38 +6,38 @@ use std::fmt;
 
 const POKEAPI_ROOT: &str = "https://pokeapi.co/api/v2";
 
-type Result<T> = std::result::Result<T, PokemonError>;
+type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug)]
-pub enum PokemonErrorKind {
-    GeneralError,
+pub enum ErrorKind<'a> {
+    RequestError(&'a str),
 }
 
-impl fmt::Display for PokemonErrorKind {
+impl fmt::Display for ErrorKind<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            PokemonErrorKind::GeneralError => write!(f, "PokeAPI Request Error"),
+            ErrorKind::RequestError(message) => write!(f, "{message}"),
         }
     }
 }
 
 #[derive(Debug)]
-pub struct PokemonError {
-    kind: PokemonErrorKind,
+pub struct Error {
+    kind: ErrorKind<'static>,
 }
 
-impl fmt::Display for PokemonError {
+impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.kind)
     }
 }
 
-impl std::error::Error for PokemonError {}
+impl std::error::Error for Error {}
 
-impl From<reqwest::Error> for PokemonError {
+impl From<reqwest::Error> for Error {
     fn from(_error: reqwest::Error) -> Self {
         Self {
-            kind: PokemonErrorKind::GeneralError,
+            kind: ErrorKind::RequestError("Reqwest Error"),
         }
     }
 }
@@ -75,7 +75,7 @@ pub async fn get_all_pokemon() -> Result<PokemonResponse> {
         .await?
         .json::<PokemonResponse>()
         .await
-        .map_err(PokemonError::from)
+        .map_err(Error::from)
 }
 
 /// # Errors
@@ -86,7 +86,7 @@ pub async fn get_single_pokemon(id: u16) -> Result<SinglePokemonResponse> {
         .await?
         .json::<SinglePokemonResponse>()
         .await
-        .map_err(PokemonError::from)
+        .map_err(Error::from)
 }
 
 #[cfg(test)]
