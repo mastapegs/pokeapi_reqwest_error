@@ -91,9 +91,10 @@ pub async fn get_single_pokemon(id: u16) -> Result<SinglePokemonResponse> {
 
 #[cfg(test)]
 mod tests {
-    use crate::get_single_pokemon;
 
-    use super::{get_all_pokemon, PokemonError, PokemonResponse, Result, SinglePokemonResponse};
+    use super::{
+        get_all_pokemon, get_single_pokemon, PokemonResponse, Result, SinglePokemonResponse,
+    };
     #[tokio::test]
     async fn test_reqwest() -> Result<()> {
         let pokemon_response = reqwest::get("https://pokeapi.co/api/v2/pokemon")
