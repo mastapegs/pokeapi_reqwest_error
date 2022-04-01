@@ -6,6 +6,8 @@ use std::fmt;
 
 const POKEAPI_ROOT: &str = "https://pokeapi.co/api/v2";
 
+type Result<T> = std::result::Result<T, PokemonError>;
+
 #[derive(Debug)]
 pub enum PokemonErrorKind {
     GeneralError,
@@ -68,7 +70,7 @@ pub struct SinglePokemonResponse {
 /// # Errors
 ///
 /// Will return `Err` if request fails
-pub async fn get_all_pokemon() -> Result<PokemonResponse, PokemonError> {
+pub async fn get_all_pokemon() -> Result<PokemonResponse> {
     reqwest::get(format!("{POKEAPI_ROOT}/pokemon"))
         .await?
         .json::<PokemonResponse>()
@@ -79,7 +81,7 @@ pub async fn get_all_pokemon() -> Result<PokemonResponse, PokemonError> {
 /// # Errors
 ///
 /// Will return `Err` if request fails
-pub async fn get_single_pokemon(id: u16) -> Result<SinglePokemonResponse, PokemonError> {
+pub async fn get_single_pokemon(id: u16) -> Result<SinglePokemonResponse> {
     reqwest::get(&format!("{POKEAPI_ROOT}/pokemon/{id}"))
         .await?
         .json::<SinglePokemonResponse>()
@@ -91,9 +93,9 @@ pub async fn get_single_pokemon(id: u16) -> Result<SinglePokemonResponse, Pokemo
 mod tests {
     use crate::get_single_pokemon;
 
-    use super::{get_all_pokemon, PokemonError, PokemonResponse, SinglePokemonResponse};
+    use super::{get_all_pokemon, PokemonError, PokemonResponse, Result, SinglePokemonResponse};
     #[tokio::test]
-    async fn test_reqwest() -> Result<(), PokemonError> {
+    async fn test_reqwest() -> Result<()> {
         let pokemon_response = reqwest::get("https://pokeapi.co/api/v2/pokemon")
             .await?
             .json::<PokemonResponse>()
@@ -111,7 +113,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_get_all_pokemon() -> Result<(), PokemonError> {
+    async fn test_get_all_pokemon() -> Result<()> {
         let pokemon_response = get_all_pokemon().await?;
 
         assert_eq!(pokemon_response.results[0].name, "bulbasaur");
@@ -120,7 +122,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_single_fetch_prototype() -> Result<(), PokemonError> {
+    async fn test_single_fetch_prototype() -> Result<()> {
         let response = reqwest::get("https://pokeapi.co/api/v2/pokemon/1")
             .await?
             .json::<SinglePokemonResponse>()
@@ -132,7 +134,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_get_single_pokemon() -> Result<(), PokemonError> {
+    async fn test_get_single_pokemon() -> Result<()> {
         let pokemon_one = get_single_pokemon(1).await?;
         let pokemon_two = get_single_pokemon(4).await?;
         let pokemon_three = get_single_pokemon(7).await?;
